@@ -18,6 +18,12 @@ export const dashboardApi = {
   getRecentOrders: (limit = 10) => request.get('/dashboard/recent-orders', { params: { limit } }),
   getSalesTrend: (days = 7) => request.get('/dashboard/sales-trend', { params: { days } }),
   getHotProducts: (limit = 10) => request.get('/dashboard/hot-products', { params: { limit } }),
+  getOrderStatusDistribution: () => request.get('/dashboard/order-status-distribution'),
+  getProductSalesRank: (limit = 10) => request.get('/dashboard/product-sales-rank', { params: { limit } }),
+  getHourlyTrend: () => request.get('/dashboard/hourly-trend'),
+  getWeeklyTrend: (weeks = 7) => request.get('/dashboard/weekly-trend', { params: { weeks } }),
+  getMonthlyTrend: (months = 6) => request.get('/dashboard/monthly-trend', { params: { months } }),
+  getCategoryStats: (days = 30) => request.get('/dashboard/category-stats', { params: { days } }),
 }
 
 // 账号管理
