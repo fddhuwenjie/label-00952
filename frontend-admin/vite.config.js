@@ -8,8 +8,15 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://backend',
-        changeOrigin: true
+        target: 'http://127.0.0.1:8083',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('proxy error', err)
+          })
+        }
       }
     }
   },

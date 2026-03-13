@@ -58,6 +58,11 @@ $routes = [
     'GET /api/v1/dashboard/recent-orders' => ['App\Controllers\DashboardController', 'recentOrders'],
     'GET /api/v1/dashboard/sales-trend' => ['App\Controllers\DashboardController', 'salesTrend'],
     'GET /api/v1/dashboard/hot-products' => ['App\Controllers\DashboardController', 'hotProducts'],
+    'GET /api/v1/dashboard/order-status-distribution' => ['App\Controllers\DashboardController', 'orderStatusDistribution'],
+    'GET /api/v1/dashboard/category-stats' => ['App\Controllers\DashboardController', 'categoryStats'],
+    'GET /api/v1/dashboard/account-sales-rank' => ['App\Controllers\DashboardController', 'accountSalesRank'],
+    'GET /api/v1/dashboard/hourly-orders' => ['App\Controllers\DashboardController', 'hourlyOrders'],
+    'GET /api/v1/dashboard/monthly-trend' => ['App\Controllers\DashboardController', 'monthlyTrend'],
 
     // 账号管理
     'GET /api/v1/accounts' => ['App\Controllers\AccountController', 'index'],

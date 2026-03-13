@@ -18,6 +18,11 @@ export const dashboardApi = {
   getRecentOrders: (limit = 10) => request.get('/dashboard/recent-orders', { params: { limit } }),
   getSalesTrend: (days = 7) => request.get('/dashboard/sales-trend', { params: { days } }),
   getHotProducts: (limit = 10) => request.get('/dashboard/hot-products', { params: { limit } }),
+  getOrderStatusDistribution: () => request.get('/dashboard/order-status-distribution'),
+  getCategoryStats: () => request.get('/dashboard/category-stats'),
+  getAccountSalesRank: (limit = 10) => request.get('/dashboard/account-sales-rank', { params: { limit } }),
+  getHourlyOrders: () => request.get('/dashboard/hourly-orders'),
+  getMonthlyTrend: (months = 6) => request.get('/dashboard/monthly-trend', { params: { months } }),
 }
 
 // 账号管理
