@@ -13,6 +13,8 @@ import {
   DollarOutlined,
   RiseOutlined,
 } from '@ant-design/icons'
+import ReactECharts from 'echarts-for-react'
+import * as echarts from 'echarts'
 import { dashboardApi } from '../services/api'
 import dayjs from 'dayjs'
 
@@ -31,6 +33,7 @@ function Dashboard() {
   const [stats, setStats] = useState(null)
   const [recentOrders, setRecentOrders] = useState([])
   const [hotProducts, setHotProducts] = useState([])
+  const [salesTrend, setSalesTrend] = useState([])
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
   useEffect(() => {
@@ -46,18 +49,236 @@ function Dashboard() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [statsRes, ordersRes, productsRes] = await Promise.all([
+      const [statsRes, ordersRes, productsRes, salesTrendRes] = await Promise.all([
         dashboardApi.getStats(),
         dashboardApi.getRecentOrders(5),
         dashboardApi.getHotProducts(5),
+        dashboardApi.getSalesTrend(7),
       ])
       setStats(statsRes.data)
       setRecentOrders(ordersRes.data || [])
       setHotProducts(productsRes.data || [])
+      setSalesTrend(salesTrendRes.data || [])
     } catch (error) {
       // ignore
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 销售趋势折线图配置
+  const getSalesTrendOption = () => {
+    const dates = salesTrend.map(item => item.date)
+    const amounts = salesTrend.map(item => item.total_amount)
+    const counts = salesTrend.map(item => item.order_count)
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params) => {
+          let result = `<div style="font-weight: bold;margin-bottom: 8px;">${params[0].axisValue}</div>`
+          params.forEach(item => {
+            const marker = `<span style="display:inline-block;margin-right:8px;border-radius:50%;width:10px;height:10px;background-color:${item.color};"></span>`
+            const value = item.seriesName === '销售额' ? `¥${item.value}` : `${item.value}单`
+            result += `<div style="margin: 4px 0;">${marker}${item.seriesName}: ${value}</div>`
+          })
+          return result
+        }
+      },
+      legend: {
+        data: ['销售额', '订单数'],
+        bottom: 10
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        top: '15%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: dates,
+        axisLabel: {
+          rotate: isMobile ? 30 : 0
+        }
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: '销售额(元)',
+          position: 'left',
+          axisLabel: {
+            formatter: '¥{value}'
+          }
+        },
+        {
+          type: 'value',
+          name: '订单数(单)',
+          position: 'right'
+        }
+      ],
+      dataZoom: isMobile ? [
+        {
+          type: 'inside',
+          start: 0,
+          end: 100
+        }
+      ] : [],
+      series: [
+        {
+          name: '销售额',
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            width: 3
+          },
+          areaStyle: {
+            opacity: 0.3
+          },
+          yAxisIndex: 0,
+          data: amounts,
+          itemStyle: {
+            color: '#1677ff'
+          }
+        },
+        {
+          name: '订单数',
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            width: 3
+          },
+          areaStyle: {
+            opacity: 0.3
+          },
+          yAxisIndex: 1,
+          data: counts,
+          itemStyle: {
+            color: '#52c41a'
+          }
+        }
+      ]
+    }
+  }
+
+  // 订单状态分布饼图配置
+  const getOrderStatusOption = () => {
+    const statusData = [
+      { name: '待支付', value: stats?.orders?.pending || 0, itemStyle: { color: '#d9d9d9' } },
+      { name: '已支付', value: stats?.orders?.paid || 0, itemStyle: { color: '#1677ff' } },
+      { name: '已发货', value: stats?.orders?.shipped || 0, itemStyle: { color: '#fa8c16' } },
+      { name: '已完成', value: stats?.orders?.completed || 0, itemStyle: { color: '#52c41a' } },
+      { name: '已退款', value: stats?.orders?.refunded || 0, itemStyle: { color: '#ff4d4f' } },
+    ].filter(item => item.value > 0)
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        orient: isMobile ? 'horizontal' : 'vertical',
+        bottom: isMobile ? 10 : 'center',
+        right: isMobile ? 'center' : 10
+      },
+      series: [
+        {
+          name: '订单状态',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          center: isMobile ? ['50%', '40%'] : ['40%', '50%'],
+          avoidLabelOverlap: true,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          label: {
+            show: !isMobile,
+            formatter: '{b}\n{d}%'
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 16,
+              fontWeight: 'bold'
+            }
+          },
+          labelLine: {
+            show: !isMobile
+          },
+          data: statusData
+        }
+      ]
+    }
+  }
+
+  // 热销商品柱状图配置
+  const getHotProductsOption = () => {
+    const productNames = hotProducts.map(item => item.title)
+    const soldCounts = hotProducts.map(item => item.sold_count)
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },
+        formatter: '{b}: {c}件'
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        top: '10%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: productNames,
+        axisLabel: {
+          interval: 0,
+          rotate: isMobile ? 45 : 30,
+          fontSize: isMobile ? 10 : 12
+        }
+      },
+      yAxis: {
+        type: 'value',
+        name: '销量(件)'
+      },
+      dataZoom: isMobile ? [
+        {
+          type: 'inside',
+          start: 0,
+          end: 100
+        }
+      ] : [],
+      series: [
+        {
+          name: '销量',
+          type: 'bar',
+          barWidth: '50%',
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#1677ff' },
+              { offset: 1, color: '#69b1ff' }
+            ]),
+            borderRadius: [4, 4, 0, 0]
+          },
+          label: {
+            show: true,
+            position: 'top',
+            formatter: '{c}件'
+          },
+          data: soldCounts
+        }
+      ]
     }
   }
 
@@ -259,6 +480,41 @@ function Dashboard() {
               value={stats?.unread_messages || 0}
               prefix={<MessageOutlined />}
               valueStyle={{ color: stats?.unread_messages > 0 ? '#ff4d4f' : 'inherit', fontSize: isMobile ? 18 : 24 }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 数据图表 - 销售趋势 */}
+      <Row gutter={[12, 12]} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <Col xs={24}>
+          <Card title="销售趋势" size="small">
+            <ReactECharts
+              option={getSalesTrendOption()}
+              style={{ height: isMobile ? 300 : 350 }}
+              opts={{ renderer: 'svg' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 数据图表 - 订单状态分布和热销商品 */}
+      <Row gutter={[12, 12]} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <Col xs={24} lg={12}>
+          <Card title="订单状态分布" size="small">
+            <ReactECharts
+              option={getOrderStatusOption()}
+              style={{ height: isMobile ? 280 : 320 }}
+              opts={{ renderer: 'svg' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card title="热销商品销量" size="small">
+            <ReactECharts
+              option={getHotProductsOption()}
+              style={{ height: isMobile ? 280 : 320 }}
+              opts={{ renderer: 'svg' }}
             />
           </Card>
         </Col>
