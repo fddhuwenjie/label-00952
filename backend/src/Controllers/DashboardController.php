@@ -154,4 +154,203 @@ class DashboardController
         $products = Database::fetchAll($sql, [$limit]);
         Response::success($products);
     }
+
+    /**
+     * 获取订单状态分布
+     * 
+     * GET /api/v1/dashboard/order-status-distribution
+     * 
+     * @return void
+     */
+    public static function orderStatusDistribution(): void
+    {
+        AuthMiddleware::authenticate();
+
+        $sql = "SELECT status, COUNT(*) as value FROM orders GROUP BY status";
+        $results = Database::fetchAll($sql);
+
+        $statusMap = [
+            'pending' => '待支付',
+            'paid' => '已支付',
+            'shipped' => '已发货',
+            'completed' => '已完成',
+            'refunded' => '已退款',
+            'cancelled' => '已取消'
+        ];
+
+        $distribution = [];
+        foreach ($results as $row) {
+            $distribution[] = [
+                'name' => $statusMap[$row['status']] ?? $row['status'],
+                'value' => (int)$row['value'],
+                'status' => $row['status']
+            ];
+        }
+
+        Response::success($distribution);
+    }
+
+    /**
+     * 获取商品分类统计
+     * 
+     * GET /api/v1/dashboard/category-stats
+     * 
+     * @return void
+     */
+    public static function categoryStats(): void
+    {
+        AuthMiddleware::authenticate();
+
+        $sql = "SELECT 
+                    c.name,
+                    COUNT(p.id) as product_count,
+                    COALESCE(SUM(p.sold_count), 0) as sold_count
+                FROM product_categories c
+                LEFT JOIN products p ON c.id = p.category_id
+                WHERE c.parent_id = 0
+                GROUP BY c.id, c.name
+                ORDER BY sold_count DESC";
+
+        $stats = Database::fetchAll($sql);
+
+        $result = [];
+        foreach ($stats as $row) {
+            $result[] = [
+                'name' => $row['name'],
+                'product_count' => (int)$row['product_count'],
+                'sold_count' => (int)$row['sold_count']
+            ];
+        }
+
+        Response::success($result);
+    }
+
+    /**
+     * 获取账号销售排行
+     * 
+     * GET /api/v1/dashboard/account-sales-rank
+     * 
+     * @return void
+     */
+    public static function accountSalesRank(): void
+    {
+        AuthMiddleware::authenticate();
+
+        $limit = (int) ($_GET['limit'] ?? 10);
+        $limit = min($limit, 50);
+
+        $sql = "SELECT 
+                    a.name,
+                    COUNT(o.id) as order_count,
+                    COALESCE(SUM(o.total_amount), 0) as total_amount
+                FROM xianyu_accounts a
+                LEFT JOIN orders o ON a.id = o.account_id
+                GROUP BY a.id, a.name
+                ORDER BY total_amount DESC
+                LIMIT ?";
+
+        $rank = Database::fetchAll($sql, [$limit]);
+
+        $result = [];
+        foreach ($rank as $row) {
+            $result[] = [
+                'name' => $row['name'],
+                'order_count' => (int)$row['order_count'],
+                'total_amount' => (float)$row['total_amount']
+            ];
+        }
+
+        Response::success($result);
+    }
+
+    /**
+     * 获取每小时订单统计(最近24小时)
+     * 
+     * GET /api/v1/dashboard/hourly-orders
+     * 
+     * @return void
+     */
+    public static function hourlyOrders(): void
+    {
+        AuthMiddleware::authenticate();
+
+        $sql = "SELECT 
+                    HOUR(created_at) as hour,
+                    COUNT(*) as order_count,
+                    COALESCE(SUM(total_amount), 0) as total_amount
+                FROM orders 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                GROUP BY HOUR(created_at)
+                ORDER BY hour ASC";
+
+        $results = Database::fetchAll($sql);
+
+        // 填充24小时
+        $hourlyData = [];
+        for ($i = 0; $i < 24; $i++) {
+            $hourlyData[$i] = [
+                'hour' => $i,
+                'order_count' => 0,
+                'total_amount' => 0
+            ];
+        }
+        foreach ($results as $row) {
+            $hour = (int)$row['hour'];
+            $hourlyData[$hour] = [
+                'hour' => $hour,
+                'order_count' => (int)$row['order_count'],
+                'total_amount' => (float)$row['total_amount']
+            ];
+        }
+
+        Response::success($hourlyData);
+    }
+
+    /**
+     * 获取月度销售趋势
+     * 
+     * GET /api/v1/dashboard/monthly-trend
+     * 
+     * @return void
+     */
+    public static function monthlyTrend(): void
+    {
+        AuthMiddleware::authenticate();
+
+        $months = (int) ($_GET['months'] ?? 6);
+        $months = min($months, 12);
+
+        $sql = "SELECT 
+                    DATE_FORMAT(created_at, '%Y-%m') as month,
+                    COUNT(*) as order_count,
+                    COALESCE(SUM(total_amount), 0) as total_amount
+                FROM orders 
+                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
+                GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+                ORDER BY month ASC";
+
+        $trend = Database::fetchAll($sql, [$months]);
+
+        // 填充缺失的月份
+        $result = [];
+        $startDate = new \DateTime("-{$months} months");
+        $endDate = new \DateTime();
+        
+        $trendMap = [];
+        foreach ($trend as $row) {
+            $trendMap[$row['month']] = $row;
+        }
+
+        while ($startDate <= $endDate) {
+            $month = $startDate->format('Y-m');
+            $result[] = [
+                'month' => $month,
+                'order_count' => (int) ($trendMap[$month]['order_count'] ?? 0),
+                'total_amount' => (float) ($trendMap[$month]['total_amount'] ?? 0),
+            ];
+            $startDate->modify('+1 month');
+        }
+
+        Response::success($result);
+    }
 }
