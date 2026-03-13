@@ -203,5 +203,3 @@ docker exec -it xianyu-backend bash
 # 进入数据库
 docker exec -it xianyu-mysql mysql -uroot -proot123 xianyu_manager
 ```
-# label-00952
-# label-00952

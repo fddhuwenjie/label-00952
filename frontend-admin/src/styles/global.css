@@ -1,0 +1,956 @@
+/**
+ * 全局样式
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+}
+
+body {
+  background-color: #f5f5f5;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 布局样式 */
+.app-layout {
+  min-height: 100vh;
+}
+
+.app-sider {
+  overflow: auto;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  transition: width 0.2s ease;
+}
+
+.app-header {
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  transition: padding 0.2s ease;
+}
+
+.app-content {
+  margin: 24px;
+  min-height: calc(100vh - 64px - 48px);
+  transition: margin 0.2s ease;
+}
+
+/* Logo */
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+}
+
+.logo-collapsed .logo-text {
+  display: none;
+}
+
+/* 页面标题 */
+.page-header {
+  margin-bottom: 24px;
+}
+
+/* 卡片网格 */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #000;
+  line-height: 1.2;
+}
+
+.stat-card-label {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.stat-card-icon {
+  font-size: 40px;
+  opacity: 0.8;
+}
+
+/* 表格样式 */
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.table-toolbar-left {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 聊天样式 */
+.chat-container {
+  display: flex;
+  height: calc(100vh - 64px - 48px);
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.chat-sessions {
+  width: 280px;
+  border-right: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #f5f5f5;
+  transition: padding 0.2s ease;
+}
+
+.chat-input {
+  padding: 16px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  transition: padding 0.2s ease;
+}
+
+.message-item {
+  margin-bottom: 16px;
+  display: flex;
+}
+
+/* 消息动画仅桌面端 */
+@media (min-width: 769px) {
+  .message-item {
+    animation: fadeInLeft 0.3s ease-out;
+  }
+
+  .message-item.self {
+    animation: fadeInRight 0.3s ease-out;
+  }
+}
+
+.message-item.self {
+  flex-direction: row-reverse;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.message-bubble:hover {
+  transform: scale(1.01);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.message-item.self .message-bubble {
+  background: #1677ff;
+  color: #fff;
+}
+
+/* 会话列表项动画 */
+.chat-sessions .ant-list-item {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.chat-sessions .ant-list-item:hover {
+  background-color: #f0f7ff;
+}
+
+.chat-sessions .ant-list-item:active {
+  transform: scale(0.98);
+}
+
+/* 状态标签 */
+.status-online { color: #52c41a; }
+.status-offline { color: #8c8c8c; }
+.status-error { color: #ff4d4f; }
+
+/* 动画关键帧 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes badgeUpdate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* 动画类 - 仅在桌面端启用 */
+@media (min-width: 769px) {
+  .fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  .slide-in-up {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  .slide-in-down {
+    animation: slideInDown 0.4s ease-out;
+  }
+
+  .slide-in-left {
+    animation: slideInLeft 0.4s ease-out;
+  }
+
+  .slide-in-right {
+    animation: slideInRight 0.4s ease-out;
+  }
+
+  .scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .bounce {
+    animation: bounce 0.5s ease-in-out;
+  }
+}
+
+/* 移动端禁用页面动画 */
+@media (max-width: 768px) {
+  .fade-in,
+  .fade-in-up,
+  .slide-in-up,
+  .slide-in-down,
+  .slide-in-left,
+  .slide-in-right,
+  .scale-in,
+  .bounce {
+    animation: none;
+  }
+}
+
+/* 过渡效果类 */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-fast {
+  transition: all 0.15s ease;
+}
+
+.transition-smooth {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 列表项悬停效果 */
+.list-item-hover {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.list-item-hover:hover {
+  background-color: #f5f5f5;
+}
+
+/* 按钮点击效果 */
+.btn-scale {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-scale:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-scale:active {
+  transform: scale(0.96) translateY(0);
+}
+
+/* 徽章动画 - 增强版 */
+.ant-badge-count {
+  animation: badgePop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.3s ease;
+}
+
+.ant-badge-count.badge-update {
+  animation: badgeUpdate 0.4s ease;
+}
+
+/* 徽章消失动画 */
+.ant-badge .ant-badge-count-sm {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* 加载动画 */
+.loading-fade {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 骨架屏加载效果 */
+.skeleton-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* 卡片入场动画 */
+.card-enter {
+  animation: fadeInUp 0.4s ease-out backwards;
+}
+
+.card-enter:nth-child(1) { animation-delay: 0.05s; }
+.card-enter:nth-child(2) { animation-delay: 0.1s; }
+.card-enter:nth-child(3) { animation-delay: 0.15s; }
+.card-enter:nth-child(4) { animation-delay: 0.2s; }
+
+/* 页面切换过渡 */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* 模态框增强动画 - 仅桌面端 */
+@media (min-width: 769px) {
+  .ant-modal {
+    animation: scaleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .ant-modal-mask {
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* 下拉菜单动画 */
+  .ant-dropdown {
+    animation: slideInDown 0.2s ease;
+  }
+}
+
+/* 抽屉动画增强 - 仅桌面端 */
+@media (min-width: 769px) {
+  .ant-drawer-content {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* 表格行悬停效果 */
+.ant-table-tbody > tr {
+  transition: background-color 0.2s ease;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: #fafafa;
+}
+
+/* 菜单项过渡 */
+.ant-menu-item {
+  transition: background-color 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+/* 输入框聚焦效果 */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused {
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+}
+
+/* 标签页切换动画 - 仅桌面端 */
+@media (min-width: 769px) {
+  .ant-tabs-tabpane {
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* 消息提示动画 */
+  .ant-message-notice {
+    animation: slideInDown 0.3s ease;
+  }
+
+  /* 通知动画 */
+  .ant-notification-notice {
+    animation: slideInRight 0.3s ease;
+  }
+}
+
+
+/* ========== 响应式设计 ========== */
+
+/* 大屏幕 (1440px以下) */
+@media (max-width: 1440px) {
+  .stat-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .chat-sessions {
+    width: 300px;
+  }
+}
+
+/* 中等屏幕 (1200px以下) */
+@media (max-width: 1200px) {
+  .app-content {
+    margin: 20px;
+  }
+  
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  
+  .chat-sessions {
+    width: 260px;
+  }
+  
+  .stat-card-value {
+    font-size: 26px;
+  }
+}
+
+/* 平板 (1024px以下) */
+@media (max-width: 1024px) {
+  .app-content {
+    margin: 16px;
+  }
+  
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .chat-sessions {
+    width: 240px;
+  }
+  
+  .table-toolbar {
+    gap: 8px;
+  }
+  
+  /* 表格列优化 */
+  .ant-table-cell {
+    padding: 12px 8px;
+  }
+  
+  /* 按钮组紧凑 */
+  .ant-space-compact {
+    flex-wrap: wrap;
+  }
+}
+
+/* 小平板 (900px以下) */
+@media (max-width: 900px) {
+  .chat-container {
+    flex-direction: column;
+    height: calc(100vh - 130px);
+  }
+  
+  .chat-sessions {
+    width: 100%;
+    height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-card-value {
+    font-size: 24px;
+  }
+}
+
+/* 手机横屏 (768px以下) */
+@media (max-width: 768px) {
+  .app-content {
+    margin: 12px;
+  }
+  
+  .app-header {
+    padding: 0 16px;
+  }
+  
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-card-value {
+    font-size: 22px;
+  }
+  
+  .stat-card-icon {
+    font-size: 32px;
+  }
+  
+  .table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .table-toolbar-left {
+    flex-direction: column;
+  }
+  
+  /* 聊天页面响应式 */
+  .chat-container {
+    flex-direction: column;
+    height: calc(100vh - 120px);
+  }
+  
+  .chat-sessions {
+    width: 100%;
+    height: 180px;
+    border-right: none;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .chat-messages {
+    padding: 12px;
+  }
+  
+  .message-bubble {
+    max-width: 85%;
+    padding: 8px 12px;
+  }
+  
+  .chat-input {
+    padding: 12px;
+  }
+  
+  /* 隐藏部分导航文字 */
+  .app-header .ant-space > span:last-child {
+    display: none;
+  }
+}
+
+/* 手机竖屏 (576px以下) */
+@media (max-width: 576px) {
+  .app-content {
+    margin: 8px;
+  }
+  
+  .app-header {
+    padding: 0 12px;
+  }
+  
+  .stat-cards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .stat-card {
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .stat-card-value {
+    font-size: 20px;
+  }
+  
+  .stat-card-icon {
+    font-size: 28px;
+  }
+  
+  /* 聊天页面小屏优化 */
+  .chat-container {
+    height: calc(100vh - 100px);
+  }
+  
+  .chat-sessions {
+    height: 150px;
+  }
+  
+  .chat-sessions .ant-list-item {
+    padding: 8px 12px;
+  }
+  
+  .chat-sessions .ant-list-item-meta-title {
+    font-size: 13px;
+  }
+  
+  .chat-sessions .ant-list-item-meta-description {
+    font-size: 11px;
+  }
+  
+  .message-bubble {
+    max-width: 90%;
+    font-size: 14px;
+  }
+  
+  .chat-input .ant-btn span {
+    display: none;
+  }
+  
+  .chat-input .ant-btn .anticon {
+    margin: 0;
+  }
+  
+  /* 表格响应式 */
+  .ant-table {
+    font-size: 13px;
+  }
+  
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px 6px;
+  }
+  
+  /* 表单响应式 */
+  .ant-form-item {
+    margin-bottom: 16px;
+  }
+  
+  .ant-modal {
+    max-width: calc(100vw - 32px);
+    margin: 16px auto;
+  }
+  
+  .ant-modal-body {
+    padding: 16px;
+  }
+}
+
+/* 超小屏幕 (375px以下) */
+@media (max-width: 375px) {
+  .app-content {
+    margin: 6px;
+  }
+  
+  .stat-card {
+    padding: 12px;
+  }
+  
+  .stat-card-value {
+    font-size: 18px;
+  }
+  
+  .chat-sessions {
+    height: 130px;
+  }
+  
+  .chat-input {
+    padding: 8px;
+  }
+  
+  .page-header h2 {
+    font-size: 18px;
+  }
+}
+
+/* 极小屏幕 (320px以下) */
+@media (max-width: 320px) {
+  .app-content {
+    margin: 4px;
+  }
+  
+  .app-header {
+    padding: 0 8px;
+  }
+  
+  .stat-card {
+    padding: 10px;
+  }
+  
+  .stat-card-value {
+    font-size: 16px;
+  }
+  
+  .stat-card-icon {
+    font-size: 24px;
+  }
+  
+  .chat-sessions {
+    height: 120px;
+  }
+  
+  .message-bubble {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .stat-card:hover {
+    transform: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  
+  .chat-sessions .ant-list-item:hover {
+    background-color: transparent;
+  }
+  
+  .chat-sessions .ant-list-item:active {
+    background-color: #f0f7ff;
+  }
+  
+  .message-bubble:hover {
+    transform: none;
+  }
+  
+  /* 移除触摸延迟 */
+  * {
+    touch-action: manipulation;
+  }
+}
+
+/* 横屏模式优化 */
+@media (max-height: 500px) and (orientation: landscape) {
+  .chat-container {
+    height: calc(100vh - 80px);
+  }
+  
+  .chat-sessions {
+    height: 100%;
+    width: 200px;
+    border-bottom: none;
+    border-right: 1px solid #f0f0f0;
+  }
+  
+  .app-header {
+    height: 48px;
+  }
+  
+  .logo {
+    height: 48px;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .stat-card {
+    border: 1px solid #000;
+  }
+  
+  .message-bubble {
+    border: 1px solid #333;
+  }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 移动端抽屉菜单样式 */
+.mobile-drawer .ant-drawer-body {
+  padding: 0 !important;
+  background: #001529 !important;
+}
+
+.mobile-drawer .ant-menu {
+  border-right: none;
+}
+
+/* 移动端页面标题 */
+@media (max-width: 576px) {
+  h2 {
+    font-size: 18px !important;
+  }
+}
+
+/* 移动端卡片列表样式 */
+.mobile-card-list .ant-table-cell {
+  padding: 0 !important;
+}
+
+.mobile-card-list .ant-table-thead {
+  display: none;
+}
+
+/* 安全区域适配 (iPhone X 等) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .app-content {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .login-page {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

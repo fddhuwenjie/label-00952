@@ -1,0 +1,70 @@
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: xianyu-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: xianyu_manager
+      MYSQL_USER: xianyu
+      MYSQL_PASSWORD: xianyu123
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3309:3306"
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xianyu-network
+
+  # PHP 后端
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xianyu-backend
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: xianyu_manager
+      DB_USERNAME: xianyu
+      DB_PASSWORD: xianyu123
+      JWT_SECRET: xianyu_manager_jwt_secret_2026
+      APP_DEBUG: "false"
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - xianyu-network
+
+  # React 前端
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile
+    container_name: xianyu-frontend
+    restart: unless-stopped
+    ports:
+      - "8084:80"
+    depends_on:
+      - backend
+    networks:
+      - xianyu-network
+
+networks:
+  xianyu-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

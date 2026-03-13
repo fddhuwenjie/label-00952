@@ -1,0 +1,643 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "闲鱼管理系统 API",
+    "description": "闲鱼店铺管理系统 RESTful API 接口文档，支持多账号管理、商品管理、订单管理、自动回复、卡券发货等功能。",
+    "version": "1.0.0",
+    "contact": {
+      "name": "技术支持"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "API 服务"
+    }
+  ],
+  "tags": [
+    {"name": "认证", "description": "用户认证相关接口"},
+    {"name": "账号", "description": "闲鱼账号管理"},
+    {"name": "商品", "description": "商品信息管理"},
+    {"name": "订单", "description": "订单管理与发货"},
+    {"name": "卡券", "description": "卡券管理与导入"},
+    {"name": "自动回复", "description": "关键词自动回复规则"},
+    {"name": "指定回复", "description": "针对特定用户/商品的回复"},
+    {"name": "聊天", "description": "在线聊天管理"},
+    {"name": "通知", "description": "消息通知"},
+    {"name": "配置", "description": "系统配置"}
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "用户登录",
+        "description": "使用用户名密码登录，获取 JWT Token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": {"type": "string", "example": "admin"},
+                  "password": {"type": "string", "example": "admin123"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "integer", "example": 0},
+                    "message": {"type": "string", "example": "登录成功"},
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {"type": "string"},
+                        "user": {"$ref": "#/components/schemas/User"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["认证"],
+        "summary": "获取当前用户信息",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts": {
+      "get": {
+        "tags": ["账号"],
+        "summary": "获取账号列表",
+        "security": [{"bearerAuth": []}, {"apiKey": []}],
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 20}},
+          {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["online", "offline", "error"]}},
+          {"name": "group_id", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "成功", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/PaginatedResponse"}}}}
+        }
+      },
+      "post": {
+        "tags": ["账号"],
+        "summary": "创建账号",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {"type": "string", "description": "账号名称"},
+                  "xianyu_id": {"type": "string", "description": "闲鱼ID"},
+                  "group_id": {"type": "integer", "description": "分组ID"},
+                  "status": {"type": "string", "enum": ["online", "offline", "error"]},
+                  "cookie": {"type": "string"},
+                  "remark": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "创建成功"}
+        }
+      }
+    },
+    "/accounts/{id}": {
+      "put": {
+        "tags": ["账号"],
+        "summary": "更新账号",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "responses": {"200": {"description": "更新成功"}}
+      },
+      "delete": {
+        "tags": ["账号"],
+        "summary": "删除账号",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "删除成功"}}
+      }
+    },
+    "/account-groups": {
+      "get": {
+        "tags": ["账号"],
+        "summary": "获取账号分组列表",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "post": {
+        "tags": ["账号"],
+        "summary": "创建账号分组",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "description": {"type": "string"},
+                  "sort": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "创建成功"}}
+      }
+    },
+    "/products": {
+      "get": {
+        "tags": ["商品"],
+        "summary": "获取商品列表",
+        "security": [{"bearerAuth": []}, {"apiKey": []}],
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer"}},
+          {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["draft", "online", "offline", "sold_out"]}},
+          {"name": "category_id", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "post": {
+        "tags": ["商品"],
+        "summary": "创建商品",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "price"],
+                "properties": {
+                  "title": {"type": "string"},
+                  "description": {"type": "string"},
+                  "price": {"type": "number"},
+                  "original_price": {"type": "number"},
+                  "stock": {"type": "integer"},
+                  "category_id": {"type": "integer"},
+                  "account_id": {"type": "integer"},
+                  "auto_delivery": {"type": "integer", "enum": [0, 1], "description": "是否自动发货"},
+                  "status": {"type": "string", "enum": ["draft", "online", "offline"]}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "创建成功"}}
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "tags": ["商品"],
+        "summary": "获取商品详情",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "put": {
+        "tags": ["商品"],
+        "summary": "更新商品",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "responses": {"200": {"description": "更新成功"}}
+      },
+      "delete": {
+        "tags": ["商品"],
+        "summary": "删除商品",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "删除成功"}}
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["订单"],
+        "summary": "获取订单列表",
+        "security": [{"bearerAuth": []}, {"apiKey": []}],
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer"}},
+          {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["pending", "paid", "shipped", "completed", "refunded", "cancelled"]}},
+          {"name": "start_date", "in": "query", "schema": {"type": "string", "format": "date"}},
+          {"name": "end_date", "in": "query", "schema": {"type": "string", "format": "date"}}
+        ],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "post": {
+        "tags": ["订单"],
+        "summary": "创建订单",
+        "security": [{"bearerAuth": []}, {"apiKey": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "quantity"],
+                "properties": {
+                  "product_id": {"type": "integer"},
+                  "quantity": {"type": "integer"},
+                  "buyer_name": {"type": "string"},
+                  "buyer_id": {"type": "string"},
+                  "xianyu_order_no": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "创建成功"}}
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": ["订单"],
+        "summary": "获取订单详情",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "put": {
+        "tags": ["订单"],
+        "summary": "更新订单状态",
+        "description": "更新订单状态为 paid 时，如果商品开启自动发货且系统开关开启，将自动执行发货",
+        "security": [{"bearerAuth": []}, {"apiKey": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {"type": "string", "enum": ["pending", "paid", "shipped", "completed", "refunded", "cancelled"]}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "更新成功"}}
+      }
+    },
+    "/orders/{id}/ship": {
+      "post": {
+        "tags": ["订单"],
+        "summary": "订单发货",
+        "description": "手动发货，留空 content 将自动从卡券库获取",
+        "security": [{"bearerAuth": []}, {"apiKey": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {"type": "string", "description": "发货内容，留空自动获取卡券"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "发货成功"}}
+      }
+    },
+    "/orders/{id}/refund": {
+      "post": {
+        "tags": ["订单"],
+        "summary": "订单退款",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "退款成功"}}
+      }
+    },
+    "/coupons": {
+      "get": {
+        "tags": ["卡券"],
+        "summary": "获取卡券列表",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer"}},
+          {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["available", "used", "expired"]}},
+          {"name": "product_id", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "post": {
+        "tags": ["卡券"],
+        "summary": "创建单个卡券",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["code"],
+                "properties": {
+                  "code": {"type": "string", "description": "卡号/卡密"},
+                  "password": {"type": "string"},
+                  "product_id": {"type": "integer"},
+                  "category_id": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "创建成功"}}
+      }
+    },
+    "/coupons/batch": {
+      "post": {
+        "tags": ["卡券"],
+        "summary": "批量导入卡券",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["codes"],
+                "properties": {
+                  "codes": {"type": "string", "description": "卡密列表，每行一个，格式：卡号 或 卡号----密码"},
+                  "product_id": {"type": "integer"},
+                  "category_id": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "导入成功"}}
+      }
+    },
+    "/auto-replies": {
+      "get": {
+        "tags": ["自动回复"],
+        "summary": "获取自动回复规则列表",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "post": {
+        "tags": ["自动回复"],
+        "summary": "创建自动回复规则",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "keywords", "reply_content"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "keywords": {"type": "array", "items": {"type": "string"}},
+                  "match_type": {"type": "string", "enum": ["contains", "exact", "regex"]},
+                  "reply_content": {"type": "string"},
+                  "priority": {"type": "integer"},
+                  "status": {"type": "integer", "enum": [0, 1]}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "创建成功"}}
+      }
+    },
+    "/targeted-replies": {
+      "get": {
+        "tags": ["指定回复"],
+        "summary": "获取指定回复规则列表",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "post": {
+        "tags": ["指定回复"],
+        "summary": "创建指定回复规则",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "target_type", "target_value", "reply_content"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "target_type": {"type": "string", "enum": ["user", "product", "account"]},
+                  "target_value": {"type": "string"},
+                  "reply_content": {"type": "string"},
+                  "time_start": {"type": "string", "format": "time"},
+                  "time_end": {"type": "string", "format": "time"},
+                  "status": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "创建成功"}}
+      }
+    },
+    "/chat/sessions": {
+      "get": {
+        "tags": ["聊天"],
+        "summary": "获取聊天会话列表",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "成功"}}
+      }
+    },
+    "/chat/sessions/{id}/messages": {
+      "get": {
+        "tags": ["聊天"],
+        "summary": "获取会话消息列表",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {"200": {"description": "成功"}}
+      },
+      "post": {
+        "tags": ["聊天"],
+        "summary": "发送消息",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content"],
+                "properties": {
+                  "content": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "发送成功"}}
+      }
+    },
+    "/chat/receive": {
+      "post": {
+        "tags": ["聊天"],
+        "summary": "接收买家消息（外部调用）",
+        "description": "供易语言等第三方程序调用，接收闲鱼买家消息",
+        "security": [{"apiKey": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_id", "buyer_id", "content"],
+                "properties": {
+                  "account_id": {"type": "integer"},
+                  "buyer_id": {"type": "string"},
+                  "buyer_name": {"type": "string"},
+                  "content": {"type": "string"},
+                  "product_id": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "成功"}}
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": ["通知"],
+        "summary": "获取通知列表",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "成功"}}
+      }
+    },
+    "/notifications/unread-count": {
+      "get": {
+        "tags": ["通知"],
+        "summary": "获取未读通知数量",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "成功"}}
+      }
+    },
+    "/configs": {
+      "get": {
+        "tags": ["配置"],
+        "summary": "获取所有系统配置",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "成功"}}
+      }
+    },
+    "/configs/{key}": {
+      "put": {
+        "tags": ["配置"],
+        "summary": "更新系统配置",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "key", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["value"],
+                "properties": {
+                  "value": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "更新成功"}}
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "username": {"type": "string"},
+          "email": {"type": "string"},
+          "role": {"type": "string"}
+        }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "code": {"type": "integer"},
+          "message": {"type": "string"},
+          "data": {"type": "object"}
+        }
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "code": {"type": "integer"},
+          "message": {"type": "string"},
+          "data": {"type": "array", "items": {"type": "object"}},
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {"type": "integer"},
+              "per_page": {"type": "integer"},
+              "total": {"type": "integer"},
+              "total_pages": {"type": "integer"}
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Token 认证，通过登录接口获取"
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key",
+        "description": "API Key 认证，需配合 X-Timestamp 和 X-Api-Sign 使用"
+      }
+    }
+  }
+}

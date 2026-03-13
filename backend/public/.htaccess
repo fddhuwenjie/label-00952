@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# 传递 Authorization header 到 PHP
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# 将所有请求重定向到 index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
